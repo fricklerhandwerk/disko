@@ -45,6 +45,20 @@ in
         type = lib.types.bool;
         default = config.boot.loader.systemd-boot.enable || config.boot.loader.grub.efiSupport;
       };
+      extraTestScript = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          Extra steps to run in the installer test. Can be used to check if the partitions mounted correctly or services booted up
+        '';
+        default = "";
+      };
+      extraTestConfig = lib.mkOption {
+        description = ''
+          Extra NixOS config for your test. Can be used to specify a different luks key for tests.
+          A dummy key is in /tmp/secret.key
+        '';
+        default = {};
+      };
     };
   };
   config = lib.mkIf (cfg.devices.disk != { }) {
@@ -60,6 +74,9 @@ in
         disko-config = builtins.removeAttrs config ["_module"];
         testMode = "direct";
         efi = cfg.tests.efi;
+        extraInstallerConfig = config.disko.tests.extraTestConfig;
+        extraSystemConfig = config.disko.tests.extraTestConfig;
+        extraTestScript = config.disko.extraTestScript;
       };
     };
 
